@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace EzPhp\Logging;
 
-use EzPhp\Application\Application;
-use EzPhp\Config\Config;
-use EzPhp\Exceptions\DefaultExceptionHandler;
-use EzPhp\Exceptions\ExceptionHandler;
-use EzPhp\ServiceProvider\ServiceProvider;
+use EzPhp\Contracts\ConfigInterface;
+use EzPhp\Contracts\ContainerInterface;
+use EzPhp\Contracts\ExceptionHandlerInterface;
+use EzPhp\Contracts\ServiceProvider;
 
 /**
  * Class LogServiceProvider
  *
  * Binds LoggerInterface to the driver configured via config/logging.php,
- * wires the static Log facade in boot(), and replaces the ExceptionHandler
- * binding with a LoggingExceptionHandler so that all unhandled exceptions
- * are automatically logged.
+ * wires the static Log facade in boot(), and wraps the registered
+ * ExceptionHandlerInterface binding with a LoggingExceptionHandler so that
+ * all unhandled exceptions are automatically logged.
  *
  * @package EzPhp\Logging
  */
@@ -27,46 +26,47 @@ final class LogServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(LoggerInterface::class, function (Application $app): LoggerInterface {
-            $config = $app->make(Config::class);
+        $this->app->bind(LoggerInterface::class, function (ContainerInterface $app): LoggerInterface {
+            $config = $app->make(ConfigInterface::class);
             $driver = $config->get('logging.driver');
             $driver = is_string($driver) ? $driver : 'file';
 
             return match ($driver) {
                 'stdout' => new StdoutDriver(),
                 'null' => new NullDriver(),
-                default => new FileDriver($this->resolveLogPath($app, $config)),
+                default => new FileDriver($this->resolveLogPath($config)),
             };
-        });
-
-        $this->app->bind(ExceptionHandler::class, function (Application $app): ExceptionHandler {
-            $debug = (bool) $app->make(Config::class)->get('app.debug', false);
-
-            return new LoggingExceptionHandler(
-                new DefaultExceptionHandler($debug),
-                $app->make(LoggerInterface::class),
-            );
         });
     }
 
     /**
+     * Wraps the framework-registered ExceptionHandlerInterface with a logging
+     * decorator and wires the static Log facade.
+     *
+     * Runs in boot() — after all register() calls — so the inner handler is
+     * already bound and can be resolved without circular reference.
+     *
      * @return void
      */
     public function boot(): void
     {
-        Log::setLogger($this->app->make(LoggerInterface::class));
+        $inner = $this->app->make(ExceptionHandlerInterface::class);
+        $logger = $this->app->make(LoggerInterface::class);
+
+        $this->app->instance(ExceptionHandlerInterface::class, new LoggingExceptionHandler($inner, $logger));
+
+        Log::setLogger($logger);
     }
 
     /**
-     * @param Application $app
-     * @param Config      $config
+     * @param ConfigInterface $config
      *
      * @return string
      */
-    private function resolveLogPath(Application $app, Config $config): string
+    private function resolveLogPath(ConfigInterface $config): string
     {
         $path = $config->get('logging.path');
 
-        return is_string($path) && $path !== '' ? $path : $app->basePath('storage/logs');
+        return is_string($path) && $path !== '' ? $path : sys_get_temp_dir() . '/ez-php-logs';
     }
 }

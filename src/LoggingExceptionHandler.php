@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EzPhp\Logging;
 
-use EzPhp\Exceptions\ExceptionHandler;
+use EzPhp\Contracts\ExceptionHandlerInterface;
 use EzPhp\Http\Request;
 use EzPhp\Http\Response;
 use Throwable;
@@ -17,16 +17,16 @@ use Throwable;
  *
  * @package EzPhp\Logging
  */
-final class LoggingExceptionHandler implements ExceptionHandler
+final class LoggingExceptionHandler implements ExceptionHandlerInterface
 {
     /**
      * LoggingExceptionHandler Constructor
      *
-     * @param ExceptionHandler $inner  The real exception-to-response converter.
-     * @param LoggerInterface  $logger Logger to record the exception.
+     * @param ExceptionHandlerInterface $inner  The real exception-to-response converter.
+     * @param LoggerInterface           $logger Logger to record the exception.
      */
     public function __construct(
-        private readonly ExceptionHandler $inner,
+        private readonly ExceptionHandlerInterface $inner,
         private readonly LoggerInterface $logger,
     ) {
     }

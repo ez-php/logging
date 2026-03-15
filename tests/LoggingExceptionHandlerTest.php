@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use EzPhp\Exceptions\ExceptionHandler;
+use EzPhp\Contracts\ExceptionHandlerInterface;
 use EzPhp\Http\Request;
 use EzPhp\Http\Response;
 use EzPhp\Logging\LoggerInterface;
@@ -148,7 +148,7 @@ final class LoggingExceptionHandlerTest extends TestCase
             }
         };
 
-        $inner = new class ($order) implements ExceptionHandler {
+        $inner = new class ($order) implements ExceptionHandlerInterface {
             /** @param \ArrayObject<int, string> $order */
             public function __construct(private readonly \ArrayObject $order)
             {
@@ -169,11 +169,11 @@ final class LoggingExceptionHandlerTest extends TestCase
     /**
      * @param Response $response
      *
-     * @return ExceptionHandler
+     * @return ExceptionHandlerInterface
      */
-    private function makeInnerHandler(Response $response): ExceptionHandler
+    private function makeInnerHandler(Response $response): ExceptionHandlerInterface
     {
-        return new class ($response) implements ExceptionHandler {
+        return new class ($response) implements ExceptionHandlerInterface {
             public function __construct(private readonly Response $response)
             {
             }
