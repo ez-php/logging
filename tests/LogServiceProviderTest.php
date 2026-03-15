@@ -9,17 +9,12 @@ use EzPhp\Application\CoreServiceProviders;
 use EzPhp\Config\Config;
 use EzPhp\Config\ConfigLoader;
 use EzPhp\Config\ConfigServiceProvider;
-use EzPhp\Console\Command\ListCommand;
 use EzPhp\Console\Command\MakeControllerCommand;
 use EzPhp\Console\Command\MakeMiddlewareCommand;
 use EzPhp\Console\Command\MakeMigrationCommand;
 use EzPhp\Console\Command\MakeProviderCommand;
 use EzPhp\Console\Command\MigrateCommand;
-use EzPhp\Console\Command\MigrateFreshCommand;
 use EzPhp\Console\Command\MigrateRollbackCommand;
-use EzPhp\Console\Command\MigrateStatusCommand;
-use EzPhp\Console\Command\ServeCommand;
-use EzPhp\Console\Command\TinkerCommand;
 use EzPhp\Console\Console;
 use EzPhp\Console\ConsoleServiceProvider;
 use EzPhp\Console\Input;
@@ -73,15 +68,10 @@ use ReflectionException;
 #[UsesClass(ConsoleServiceProvider::class)]
 #[UsesClass(MigrateCommand::class)]
 #[UsesClass(MigrateRollbackCommand::class)]
-#[UsesClass(MigrateFreshCommand::class)]
-#[UsesClass(MigrateStatusCommand::class)]
 #[UsesClass(MakeMigrationCommand::class)]
 #[UsesClass(MakeControllerCommand::class)]
 #[UsesClass(MakeMiddlewareCommand::class)]
 #[UsesClass(MakeProviderCommand::class)]
-#[UsesClass(ServeCommand::class)]
-#[UsesClass(TinkerCommand::class)]
-#[UsesClass(ListCommand::class)]
 #[UsesClass(Console::class)]
 #[UsesClass(Input::class)]
 #[UsesClass(Output::class)]
