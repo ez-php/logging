@@ -2,7 +2,7 @@
 
 Logging module for the [ez-php framework](https://github.com/ez-php/framework) — structured logging with file, stdout, and null drivers.
 
-[![CI](https://github.com/ez-php/logger/actions/workflows/ci.yml/badge.svg)](https://github.com/ez-php/logger/actions/workflows/ci.yml)
+[![CI](https://github.com/ez-php/logging/actions/workflows/ci.yml/badge.svg)](https://github.com/ez-php/logging/actions/workflows/ci.yml)
 
 ## Requirements
 
