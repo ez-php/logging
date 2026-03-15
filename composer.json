@@ -1,0 +1,46 @@
+{
+  "name": "ez-php/logging",
+  "version": "0.1.0",
+  "description": "Logging module for the ez-php framework — structured logging with file, stdout, and null drivers",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Andreas Uretschnig",
+      "email": "andreas.uretschnig@gmail.com"
+    }
+  ],
+  "keywords": ["logging", "logger", "php", "framework", "ez-php"],
+  "homepage": "https://github.com/ez-php/logging",
+  "support": {
+    "issues": "https://github.com/ez-php/logging/issues",
+    "source": "https://github.com/ez-php/logging"
+  },
+  "require": {
+    "php": "^8.5",
+    "ez-php/framework": "0.*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^13.0",
+    "phpstan/phpstan": "^2.1",
+    "friendsofphp/php-cs-fixer": "^3.94",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "phpstan/phpstan-deprecation-rules": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "EzPhp\\Logging\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "cs": "php-cs-fixer fix",
+    "analyse": "phpstan analyse",
+    "test": "phpunit",
+    "full": "composer analyse && composer cs && composer test"
+  }
+}
