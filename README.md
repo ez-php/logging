@@ -7,7 +7,7 @@ Logging module for the [ez-php framework](https://github.com/ez-php/framework) â
 ## Requirements
 
 - PHP 8.5+
-- ez-php/framework ^0.1
+- ez-php/framework 0.*
 
 ## Installation
 
