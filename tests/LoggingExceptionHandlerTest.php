@@ -107,9 +107,9 @@ final class LoggingExceptionHandlerTest extends TestCase
         /** @var \ArrayObject<int, string> $order */
         $order = new \ArrayObject();
 
-        $spy = new class ($order) implements LoggerInterface {
+        $spy = new readonly class ($order) implements LoggerInterface {
             /** @param \ArrayObject<int, string> $order */
-            public function __construct(private readonly \ArrayObject $order)
+            public function __construct(private \ArrayObject $order)
             {
             }
 
@@ -150,9 +150,9 @@ final class LoggingExceptionHandlerTest extends TestCase
             }
         };
 
-        $inner = new class ($order) implements ExceptionHandlerInterface {
+        $inner = new readonly class ($order) implements ExceptionHandlerInterface {
             /** @param \ArrayObject<int, string> $order */
-            public function __construct(private readonly \ArrayObject $order)
+            public function __construct(private \ArrayObject $order)
             {
             }
 
@@ -175,8 +175,8 @@ final class LoggingExceptionHandlerTest extends TestCase
      */
     private function makeInnerHandler(Response $response): ExceptionHandlerInterface
     {
-        return new class ($response) implements ExceptionHandlerInterface {
-            public function __construct(private readonly Response $response)
+        return new readonly class ($response) implements ExceptionHandlerInterface {
+            public function __construct(private Response $response)
             {
             }
 

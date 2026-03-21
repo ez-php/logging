@@ -52,6 +52,7 @@ final class LogServiceProviderTest extends ApplicationTestCase
 
     /**
      * @return void
+     * @throws \ReflectionException
      */
     public function test_logger_interface_is_bound(): void
     {
@@ -60,6 +61,7 @@ final class LogServiceProviderTest extends ApplicationTestCase
 
     /**
      * @return void
+     * @throws \ReflectionException
      */
     public function test_exception_handler_is_wrapped_with_logging_decorator(): void
     {
@@ -68,6 +70,7 @@ final class LogServiceProviderTest extends ApplicationTestCase
 
     /**
      * @return void
+     * @throws \ReflectionException
      */
     public function test_log_facade_is_wired_after_boot(): void
     {
@@ -79,6 +82,7 @@ final class LogServiceProviderTest extends ApplicationTestCase
 
     /**
      * @return void
+     * @throws \ReflectionException
      */
     public function test_file_driver_is_selected_by_default(): void
     {

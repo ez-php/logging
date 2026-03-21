@@ -13,14 +13,14 @@ namespace EzPhp\Logging;
  *
  * @package EzPhp\Logging
  */
-final class FileDriver implements LoggerInterface
+final readonly class FileDriver implements LoggerInterface
 {
     /**
      * FileDriver Constructor
      *
      * @param string $directory Absolute path to the log directory (created on demand).
      */
-    public function __construct(private readonly string $directory)
+    public function __construct(private string $directory)
     {
     }
 

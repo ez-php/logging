@@ -17,7 +17,7 @@ use Throwable;
  *
  * @package EzPhp\Logging
  */
-final class LoggingExceptionHandler implements ExceptionHandlerInterface
+final readonly class LoggingExceptionHandler implements ExceptionHandlerInterface
 {
     /**
      * LoggingExceptionHandler Constructor
@@ -26,8 +26,8 @@ final class LoggingExceptionHandler implements ExceptionHandlerInterface
      * @param LoggerInterface           $logger Logger to record the exception.
      */
     public function __construct(
-        private readonly ExceptionHandlerInterface $inner,
-        private readonly LoggerInterface $logger,
+        private ExceptionHandlerInterface $inner,
+        private LoggerInterface $logger,
     ) {
     }
 
