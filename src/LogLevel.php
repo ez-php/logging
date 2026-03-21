@@ -30,6 +30,6 @@ enum LogLevel: string
      */
     public static function all(): array
     {
-        return [self::DEBUG, self::INFO, self::WARNING, self::ERROR, self::CRITICAL];
+        return self::cases();
     }
 }
