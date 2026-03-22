@@ -1,6 +1,6 @@
 {
   "name": "ez-php/logging",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Logging module for the ez-php framework — structured logging with file, stdout, and null drivers",
   "type": "library",
   "license": "MIT",
