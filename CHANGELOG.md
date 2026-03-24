@@ -2,6 +2,12 @@
 
 All notable changes to `ez-php/logging` are documented here.
 
+## [v1.0.0] — 2026-03-24
+
+### Documentation
+- Update CHANGELOG for v0.9.3 [skip ci] (5d6c90d)
+
+
 ## [v0.9.3] — 2026-03-24
 
 ### Documentation
