@@ -260,7 +260,7 @@ All methods are no-ops. Used in tests and when logging is intentionally disabled
 Decorator that serialises each log entry as a single JSON line and forwards it to an inner driver:
 
 ```json
-{"timestamp":"2026-03-21T12:00:00+00:00","level":"info","message":"tick.event","context":{"robuddy_id":5}}
+{"timestamp":"2026-03-21T12:00:00+00:00","level":"info","message":"tick.event","context":{"user_id":5}}
 ```
 
 Combine with `FileDriver` or `StdoutDriver` via `logging.json_inner` to get structured production logs.
