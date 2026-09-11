@@ -39,6 +39,7 @@ return [
 
 ```php
 use EzPhp\Logging\Log;
+use EzPhp\Logging\LogLevel;
 
 Log::debug('Cache miss', ['key' => 'users.all']);
 Log::info('User registered', ['id' => 42]);
@@ -47,7 +48,7 @@ Log::error('Payment failed', ['order' => 'ORD-99']);
 Log::critical('Database unreachable');
 
 // Generic level dispatch
-Log::log('info', 'Something happened');
+Log::log(LogLevel::INFO, 'Something happened');
 ```
 
 ## Drivers
