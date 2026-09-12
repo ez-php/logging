@@ -234,7 +234,7 @@ src/
 ├── ContextualLogger.php           — decorator: merges a fixed context array into every log call
 ├── RequestContextMiddleware.php   — middleware: injects request_id/ip/method/path into Log for each request
 ├── Log.php                        — static facade; delegates to an injected LoggerInterface singleton
-├── LoggingExceptionHandler.php    — decorator: logs at error level (with file/line), then delegates to inner handler
+├── LoggingExceptionHandler.php    — decorator: report() logs at error level (with file/line) and delegates; render() only delegates
 └── LogServiceProvider.php         — binds LoggerInterface (config-driven), wraps ExceptionHandler, wires Log
 
 tests/
@@ -252,7 +252,7 @@ tests/
 ├── ContextualLoggerTest.php            — covers ContextualLogger: fixed context merged into every call
 ├── RequestContextMiddlewareTest.php    — covers RequestContextMiddleware: sets/restores logger, injects context
 ├── LogTest.php                         — covers Log facade: setLogger, resetLogger, all level delegates
-├── LoggingExceptionHandlerTest.php     — covers decorator: logs before delegating, returns inner response
+├── LoggingExceptionHandlerTest.php     — covers decorator: report() logs then delegates, render() does not log, returns inner response
 ├── LogServiceProviderTest.php          — covers provider: binds LoggerInterface, wraps ExceptionHandler
 ├── ApplicationTestCase.php             — full-bootstrap test base (requires Docker DB)
 └── DatabaseTestCase.php                — database-aware test base
@@ -378,9 +378,12 @@ Static facade. Holds a `LoggerInterface|null` singleton. All static methods thro
 
 ### LoggingExceptionHandler (`src/LoggingExceptionHandler.php`)
 
-Decorator around `ExceptionHandlerInterface`. On `render()`:
-1. Calls `LoggerInterface::error()` with the exception message and context `['exception' => $e::class, 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]`
-2. Delegates to the inner handler and returns its response unchanged
+Decorator around `ExceptionHandlerInterface`.
+
+- `report()`: calls `LoggerInterface::error()` with the exception message and context `['exception' => $e::class, 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]`, then delegates to the inner handler's `report()`
+- `render()`: delegates to the inner handler and returns its response unchanged — **no logging**
+
+Logging lives in `report()` because the kernel calls `report()` and `render()` separately (and only `report()` when a streamed response fails after its headers were sent). Logging in both would record every exception twice.
 
 ---
 

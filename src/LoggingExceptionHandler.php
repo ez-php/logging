@@ -12,8 +12,10 @@ use Throwable;
 /**
  * Class LoggingExceptionHandler
  *
- * Decorator that logs every exception before delegating HTTP rendering
- * to the inner handler. Registered automatically by LogServiceProvider.
+ * Decorator that logs every exception in report() and delegates both
+ * report() and render() to the inner handler. render() does not log: the
+ * kernel calls report() and render() separately, so logging in both would
+ * record every exception twice. Registered automatically by LogServiceProvider.
  *
  * @package EzPhp\Logging
  */
@@ -32,12 +34,14 @@ final readonly class LoggingExceptionHandler implements ExceptionHandlerInterfac
     }
 
     /**
+     * Log the exception, then let the inner handler report it too.
+     *
      * @param Throwable        $e
      * @param RequestInterface $request
      *
-     * @return ResponseInterface
+     * @return void
      */
-    public function render(Throwable $e, RequestInterface $request): ResponseInterface
+    public function report(Throwable $e, RequestInterface $request): void
     {
         $this->logger->error($e->getMessage(), [
             'exception' => $e::class,
@@ -46,6 +50,19 @@ final readonly class LoggingExceptionHandler implements ExceptionHandlerInterfac
             'line' => $e->getLine(),
         ]);
 
+        $this->inner->report($e, $request);
+    }
+
+    /**
+     * Delegate rendering. Does not log — report() does, and the kernel calls both.
+     *
+     * @param Throwable        $e
+     * @param RequestInterface $request
+     *
+     * @return ResponseInterface
+     */
+    public function render(Throwable $e, RequestInterface $request): ResponseInterface
+    {
         return $this->inner->render($e, $request);
     }
 }

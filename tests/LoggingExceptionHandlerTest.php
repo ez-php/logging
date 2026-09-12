@@ -77,7 +77,7 @@ final class LoggingExceptionHandlerTest extends TestCase
         $handler = new LoggingExceptionHandler($inner, $spy);
         $e = new RuntimeException('something broke', 42);
 
-        $handler->render($e, new Request('GET', '/'));
+        $handler->report($e, new Request('GET', '/'));
 
         $this->assertCount(1, $spy->logged);
         $this->assertSame(LogLevel::ERROR, $spy->logged[0]['level']);
@@ -103,12 +103,61 @@ final class LoggingExceptionHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function test_logs_before_delegating(): void
+    public function test_report_logs_then_delegates_report_to_inner(): void
     {
         /** @var \ArrayObject<int, string> $order */
         $order = new \ArrayObject();
+        $spy = $this->makeOrderLogger($order);
 
-        $spy = new readonly class ($order) implements LoggerInterface {
+        $inner = new readonly class ($order) implements ExceptionHandlerInterface {
+            /** @param \ArrayObject<int, string> $order */
+            public function __construct(private \ArrayObject $order)
+            {
+            }
+
+            public function report(Throwable $e, RequestInterface $request): void
+            {
+                $this->order->append('inner-report');
+            }
+
+            public function render(Throwable $e, RequestInterface $request): Response
+            {
+                $this->order->append('inner-render');
+                return new Response('ok');
+            }
+        };
+
+        (new LoggingExceptionHandler($inner, $spy))->report(new RuntimeException('x'), new Request('GET', '/'));
+
+        $this->assertSame(['log', 'inner-report'], $order->getArrayCopy());
+    }
+
+    /**
+     * render() must not log: the kernel calls report() and render() separately,
+     * so logging in both would record every exception twice.
+     *
+     * @return void
+     */
+    public function test_render_does_not_log(): void
+    {
+        /** @var \ArrayObject<int, string> $order */
+        $order = new \ArrayObject();
+        $inner = $this->makeInnerHandler(new Response('error', 500));
+
+        (new LoggingExceptionHandler($inner, $this->makeOrderLogger($order)))
+            ->render(new RuntimeException('x'), new Request('GET', '/'));
+
+        $this->assertSame([], $order->getArrayCopy());
+    }
+
+    /**
+     * @param \ArrayObject<int, string> $order
+     *
+     * @return LoggerInterface
+     */
+    private function makeOrderLogger(\ArrayObject $order): LoggerInterface
+    {
+        return new readonly class ($order) implements LoggerInterface {
             /** @param \ArrayObject<int, string> $order */
             public function __construct(private \ArrayObject $order)
             {
@@ -150,23 +199,6 @@ final class LoggingExceptionHandlerTest extends TestCase
                 $this->log(LogLevel::CRITICAL, $message, $context);
             }
         };
-
-        $inner = new readonly class ($order) implements ExceptionHandlerInterface {
-            /** @param \ArrayObject<int, string> $order */
-            public function __construct(private \ArrayObject $order)
-            {
-            }
-
-            public function render(Throwable $e, RequestInterface $request): Response
-            {
-                $this->order->append('render');
-                return new Response('ok');
-            }
-        };
-
-        (new LoggingExceptionHandler($inner, $spy))->render(new RuntimeException('x'), new Request('GET', '/'));
-
-        $this->assertSame(['log', 'render'], $order->getArrayCopy());
     }
 
     /**
@@ -178,6 +210,10 @@ final class LoggingExceptionHandlerTest extends TestCase
     {
         return new readonly class ($response) implements ExceptionHandlerInterface {
             public function __construct(private Response $response)
+            {
+            }
+
+            public function report(Throwable $e, RequestInterface $request): void
             {
             }
 

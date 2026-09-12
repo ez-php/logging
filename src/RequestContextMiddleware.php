@@ -7,7 +7,7 @@ namespace EzPhp\Logging;
 use Closure;
 use EzPhp\Contracts\MiddlewareInterface;
 use EzPhp\Http\RequestInterface;
-use EzPhp\Http\Response;
+use EzPhp\Http\ResponseInterface;
 
 /**
  * Class RequestContextMiddleware
@@ -40,9 +40,9 @@ final readonly class RequestContextMiddleware implements MiddlewareInterface
      * @param RequestInterface $request
      * @param callable         $next
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function handle(RequestInterface $request, callable $next): Response
+    public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $remoteAddr = $request->server('REMOTE_ADDR', '');
         $ip = is_string($remoteAddr) ? $remoteAddr : '';
