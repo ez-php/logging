@@ -6,7 +6,7 @@ namespace EzPhp\Logging;
 
 use EzPhp\Contracts\ExceptionHandlerInterface;
 use EzPhp\Http\RequestInterface;
-use EzPhp\Http\Response;
+use EzPhp\Http\ResponseInterface;
 use Throwable;
 
 /**
@@ -35,9 +35,9 @@ final readonly class LoggingExceptionHandler implements ExceptionHandlerInterfac
      * @param Throwable        $e
      * @param RequestInterface $request
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function render(Throwable $e, RequestInterface $request): Response
+    public function render(Throwable $e, RequestInterface $request): ResponseInterface
     {
         $this->logger->error($e->getMessage(), [
             'exception' => $e::class,
