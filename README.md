@@ -27,10 +27,10 @@ Configure in `config/logging.php`:
 
 ```php
 return [
-    'driver'    => env('LOG_DRIVER', 'file'), // file | stdout | null | json | stack
-    'path'      => env('LOG_PATH', 'storage/logs'),
-    'min_level' => env('LOG_MIN_LEVEL', ''),  // DEBUG|INFO|WARNING|ERROR|CRITICAL — empty = all
-    'json_inner'=> env('LOG_JSON_INNER', 'stdout'), // inner driver when driver=json
+    'driver'    => getenv('LOG_DRIVER') ?: 'file', // file | stdout | null | json | stack
+    'path'      => getenv('LOG_PATH') ?: 'storage/logs',
+    'min_level' => getenv('LOG_MIN_LEVEL') ?: '',  // DEBUG|INFO|WARNING|ERROR|CRITICAL — empty = all
+    'json_inner'=> getenv('LOG_JSON_INNER') ?: 'stdout', // inner driver when driver=json
     'stack'     => ['file', 'stdout'],              // used when driver=stack
 ];
 ```
