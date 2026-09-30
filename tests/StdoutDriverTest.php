@@ -72,13 +72,18 @@ final class StdoutDriverTest extends TestCase
      */
     public function test_error_does_not_write_to_stdout(): void
     {
-        $driver = new StdoutDriver();
+        $stderr = fopen('php://memory', 'w+b');
+        $this->assertIsResource($stderr);
+        $driver = new StdoutDriver($stderr);
 
         ob_start();
         $driver->error('error message');
         $output = (string) ob_get_clean();
 
         $this->assertSame('', $output);
+        rewind($stderr);
+        $this->assertStringContainsString('ERROR: error message', (string) stream_get_contents($stderr));
+        fclose($stderr);
     }
 
     /**
@@ -86,13 +91,18 @@ final class StdoutDriverTest extends TestCase
      */
     public function test_critical_does_not_write_to_stdout(): void
     {
-        $driver = new StdoutDriver();
+        $stderr = fopen('php://memory', 'w+b');
+        $this->assertIsResource($stderr);
+        $driver = new StdoutDriver($stderr);
 
         ob_start();
         $driver->critical('critical message');
         $output = (string) ob_get_clean();
 
         $this->assertSame('', $output);
+        rewind($stderr);
+        $this->assertStringContainsString('CRITICAL: critical message', (string) stream_get_contents($stderr));
+        fclose($stderr);
     }
 
     /**

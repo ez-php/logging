@@ -15,6 +15,20 @@ namespace EzPhp\Logging;
 final class StdoutDriver implements LoggerInterface
 {
     /**
+     * @var resource|null
+     */
+    private mixed $errorStream;
+
+    /**
+     * @param resource|null $errorStream Where error/critical lines go; null = STDERR.
+     *                                   Injectable so tests can capture them.
+     */
+    public function __construct(mixed $errorStream = null)
+    {
+        $this->errorStream = is_resource($errorStream) ? $errorStream : null;
+    }
+
+    /**
      * @param LogLevel             $level
      * @param string               $message
      * @param array<string, mixed> $context
@@ -26,7 +40,7 @@ final class StdoutDriver implements LoggerInterface
         $line = $this->formatLine($level, $message, $context);
 
         if (in_array($level, [LogLevel::ERROR, LogLevel::CRITICAL], true)) {
-            fwrite(STDERR, $line);
+            fwrite($this->errorStream ?? STDERR, $line);
         } else {
             echo $line;
         }
