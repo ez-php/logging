@@ -29,7 +29,7 @@ Configure in `config/logging.php`:
 return [
     'driver'    => getenv('LOG_DRIVER') ?: 'file', // file | stdout | null | json | stack
     'path'      => getenv('LOG_PATH') ?: 'storage/logs',
-    'min_level' => getenv('LOG_MIN_LEVEL') ?: '',  // DEBUG|INFO|WARNING|ERROR|CRITICAL — empty = all
+    'min_level' => getenv('LOG_LEVEL') ?: '',      // DEBUG|INFO|WARNING|ERROR|CRITICAL — empty = all
     'json_inner'=> getenv('LOG_JSON_INNER') ?: 'stdout', // inner driver when driver=json
     'stack'     => ['file', 'stdout'],              // used when driver=stack
 ];
@@ -61,11 +61,11 @@ Log::log(LogLevel::INFO, 'Something happened');
 | `json` | Decorator: serialises entries as JSON and forwards to an inner driver |
 | `stack` | Decorator: fans each call out to multiple inner drivers simultaneously |
 
-Wrap any driver with a minimum-level filter by setting `LOG_MIN_LEVEL`:
+Wrap any driver with a minimum-level filter by setting `LOG_LEVEL`:
 
 ```dotenv
 LOG_DRIVER=file
-LOG_MIN_LEVEL=WARNING   # drops DEBUG and INFO entries
+LOG_LEVEL=WARNING   # drops DEBUG and INFO entries
 ```
 
 ## JSON structured logging

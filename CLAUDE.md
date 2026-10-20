@@ -489,7 +489,7 @@ After building the driver, if `logging.min_level` is a non-empty valid `LogLevel
 | Concern | Where it belongs |
 |---|---|
 | Log rotation daemon / logrotate config | Infrastructure / deployment |
-| Async log shipping (ELK, Datadog, etc.) | Application layer or a future `ez-php/log-transport` package |
+| Async log shipping (ELK, Datadog, Loki) | `ez-php/log-transport` |
 | Structured log querying / searching | External tooling (Grafana Loki, etc.) |
 | PSR-3 compatibility shim | Application layer — implement a thin adapter if PSR-3 is required |
 | Database query logging | `ez-php/orm` module (optional query log decorator) |
