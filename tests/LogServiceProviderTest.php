@@ -19,6 +19,7 @@ use EzPhp\Logging\MinLevelDriver;
 use EzPhp\Logging\NullDriver;
 use EzPhp\Logging\StackDriver;
 use EzPhp\Logging\StdoutDriver;
+use EzPhp\Logging\SyslogDriver;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -35,6 +36,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(StdoutDriver::class)]
 #[UsesClass(JsonDriver::class)]
 #[UsesClass(StackDriver::class)]
+#[UsesClass(SyslogDriver::class)]
 #[UsesClass(MinLevelDriver::class)]
 #[UsesClass(LoggingExceptionHandler::class)]
 #[UsesClass(Log::class)]
@@ -179,7 +181,9 @@ final class LogServiceProviderTest extends ApplicationTestCase
             'null' => [['logging.driver' => 'null'], NullDriver::class],
             'json' => [['logging.driver' => 'json'], JsonDriver::class],
             'stack' => [['logging.driver' => 'stack', 'logging.stack' => ['null']], StackDriver::class],
-            'unknown falls back to file' => [['logging.driver' => 'syslog'], FileDriver::class],
+            'syslog' => [['logging.driver' => 'syslog', 'logging.syslog.facility' => 'local3'], SyslogDriver::class],
+            'syslog in a stack' => [['logging.driver' => 'stack', 'logging.stack' => ['syslog']], StackDriver::class],
+            'unknown falls back to file' => [['logging.driver' => 'graylog'], FileDriver::class],
             'non-string falls back to file' => [['logging.driver' => 1], FileDriver::class],
             'valid min_level wraps the driver' => [['logging.driver' => 'null', 'logging.min_level' => 'warning'], MinLevelDriver::class],
             'invalid min_level is ignored' => [['logging.driver' => 'null', 'logging.min_level' => 'loud'], NullDriver::class],

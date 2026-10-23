@@ -277,6 +277,7 @@ src/
 ├── LogLevel.php                   — backed enum (string): DEBUG|INFO|WARNING|ERROR|CRITICAL; severity(), isAtLeast(), fromString()
 ├── FileDriver.php                 — appends to daily-rotated files; creates directory on demand
 ├── StdoutDriver.php               — debug/info/warning → stdout (echo), error/critical → stderr (fwrite)
+├── SyslogDriver.php               — system logger via stdlib openlog()/syslog(); level → LOG_* priority, injectable writer
 ├── NullDriver.php                 — no-op: discards all log entries silently
 ├── JsonDriver.php                 — decorator: serialises each entry as JSON, forwards to inner driver
 ├── StackDriver.php                — decorator: fans a single call out to multiple inner drivers
@@ -293,6 +294,7 @@ tests/
 ├── OrderTracker.php                    — reusable test helper: records call order across multiple spies
 ├── OrderedSpyLogger.php                — reusable test helper: spy that records calls into a shared OrderTracker
 ├── LogLevelTest.php                    — covers LogLevel enum: severity ordering, isAtLeast, fromString
+├── SyslogDriverTest.php                — covers SyslogDriver via an injected writer: priorities, JSON context, facilities, default writer smoke test
 ├── NullDriverTest.php                  — covers NullDriver: no output for any level
 ├── StdoutDriverTest.php                — covers StdoutDriver: stdout for info levels, stderr for error levels
 ├── FileDriverTest.php                  — covers FileDriver: creates file, appends entries, formats correctly
@@ -355,6 +357,12 @@ Context is JSON-encoded and appended only when non-empty. The log directory is c
 ### StdoutDriver (`src/StdoutDriver.php`)
 
 Writes to stdout via `echo` for `debug`, `info`, `warning` levels — capturable by `ob_start()` in tests. `error` and `critical` write to STDERR via `fwrite(STDERR, ...)`.
+
+---
+
+### SyslogDriver (`src/SyslogDriver.php`)
+
+Writes through PHP's stdlib `openlog()`/`syslog()` — no extension, no network. `openlog($ident, LOG_PID | LOG_ODELAY, $facility)` runs once, on the first entry. Levels map to `LOG_DEBUG`/`LOG_INFO`/`LOG_WARNING`/`LOG_ERR`/`LOG_CRIT` (`SyslogDriver::priority()`); a non-empty context is JSON-encoded and appended. The facility is a name (`user`, `daemon`, `auth`, `local0` … `local7`); an unknown name throws `InvalidArgumentException` at construction. The third constructor argument replaces the `syslog()` call with a `Closure(int $priority, string $line)`, which is how the tests run without a system logger.
 
 ---
 
@@ -445,6 +453,7 @@ Binds `LoggerInterface` lazily. Reads `logging.driver` from `Config` at resoluti
 | `logging.driver` | Driver built |
 |---|---|
 | `'stdout'` | `StdoutDriver` |
+| `'syslog'` | `SyslogDriver` with `logging.syslog.ident` (default `'ez-php'`) and `logging.syslog.facility` (default `'user'`) |
 | `'null'` | `NullDriver` |
 | `'json'` | `JsonDriver` wrapping `logging.json_inner` sub-driver (default: `StdoutDriver`) |
 | `'stack'` | `StackDriver` from the `logging.stack` array of driver names |
@@ -490,7 +499,7 @@ After building the driver, if `logging.min_level` is a non-empty valid `LogLevel
 | Concern | Where it belongs |
 |---|---|
 | Log rotation daemon / logrotate config | Infrastructure / deployment |
-| Async log shipping (ELK, Datadog, Loki) | `ez-php/log-transport` |
+| Async log shipping (ELK, Datadog, Loki), remote syslog (RFC 5424 over UDP) | `ez-php/log-transport` |
 | Structured log querying / searching | External tooling (Grafana Loki, etc.) |
 | PSR-3 compatibility shim | `ez-php/psr-bridge` (`Log\PsrLogger` / `Log\EzLogger`) |
 | Database query logging | `ez-php/orm` module (optional query log decorator) |

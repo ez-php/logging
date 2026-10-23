@@ -17,7 +17,7 @@ use EzPhp\Contracts\ServiceProvider;
  * ExceptionHandlerInterface binding with a LoggingExceptionHandler so that
  * all unhandled exceptions are automatically logged.
  *
- * Supported drivers: file, stdout, null, json, stack.
+ * Supported drivers: file, stdout, syslog, null, json, stack.
  * Optional wrappers: MinLevelDriver (when logging.min_level is set).
  *
  * @package EzPhp\Logging
@@ -82,6 +82,7 @@ final class LogServiceProvider extends ServiceProvider
         return match ($driver) {
             'stdout' => new StdoutDriver(),
             'null' => new NullDriver(),
+            'syslog' => $this->makeSyslogDriver($config),
             'json' => $this->makeJsonDriver($config),
             'stack' => $this->makeStackDriver($config),
             default => new FileDriver(
@@ -93,7 +94,7 @@ final class LogServiceProvider extends ServiceProvider
 
     /**
      * Build a named sub-driver for use inside a json or stack driver.
-     * Only file, stdout, and null are supported as sub-drivers.
+     * Only file, stdout, syslog and null are supported as sub-drivers.
      *
      * @param string          $name
      * @param ConfigInterface $config
@@ -105,11 +106,30 @@ final class LogServiceProvider extends ServiceProvider
         return match ($name) {
             'stdout' => new StdoutDriver(),
             'null' => new NullDriver(),
+            'syslog' => $this->makeSyslogDriver($config),
             default => new FileDriver(
                 $this->resolveLogPath($config),
                 $this->resolveMaxBytes($config),
             ),
         };
+    }
+
+    /**
+     * Build the syslog driver from logging.syslog.ident / logging.syslog.facility.
+     *
+     * @param ConfigInterface $config
+     *
+     * @return SyslogDriver
+     */
+    private function makeSyslogDriver(ConfigInterface $config): SyslogDriver
+    {
+        $ident = $config->get('logging.syslog.ident');
+        $facility = $config->get('logging.syslog.facility');
+
+        return new SyslogDriver(
+            is_string($ident) && $ident !== '' ? $ident : 'ez-php',
+            is_string($facility) && $facility !== '' ? $facility : 'user',
+        );
     }
 
     /**
@@ -147,7 +167,7 @@ final class LogServiceProvider extends ServiceProvider
                 continue;
             }
 
-            if (!in_array($name, ['file', 'stdout', 'null'], true)) {
+            if (!in_array($name, ['file', 'stdout', 'syslog', 'null'], true)) {
                 continue;
             }
 

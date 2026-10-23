@@ -27,7 +27,7 @@ Configure in `config/logging.php`:
 
 ```php
 return [
-    'driver'    => getenv('LOG_DRIVER') ?: 'file', // file | stdout | null | json | stack
+    'driver'    => getenv('LOG_DRIVER') ?: 'file', // file | stdout | syslog | null | json | stack
     'path'      => getenv('LOG_PATH') ?: 'storage/logs',
     'min_level' => getenv('LOG_LEVEL') ?: '',      // DEBUG|INFO|WARNING|ERROR|CRITICAL — empty = all
     'json_inner'=> getenv('LOG_JSON_INNER') ?: 'stdout', // inner driver when driver=json
@@ -57,6 +57,7 @@ Log::log(LogLevel::INFO, 'Something happened');
 |---|---|
 | `file` | Appends to `{path}/app-YYYY-MM-DD.log` (daily rotation) |
 | `stdout` | `debug`/`info`/`warning` → stdout · `error`/`critical` → stderr |
+| `syslog` | System logger (syslog/journald) via PHP's `openlog()`/`syslog()`; ident and facility from `logging.syslog.*` |
 | `null` | Discards all entries — useful in tests |
 | `json` | Decorator: serialises entries as JSON and forwards to an inner driver |
 | `stack` | Decorator: fans each call out to multiple inner drivers simultaneously |
@@ -67,6 +68,16 @@ Wrap any driver with a minimum-level filter by setting `LOG_LEVEL`:
 LOG_DRIVER=file
 LOG_LEVEL=WARNING   # drops DEBUG and INFO entries
 ```
+
+## Syslog
+
+```dotenv
+LOG_DRIVER=syslog
+LOG_SYSLOG_IDENT=my-app      # program name in the log (default ez-php)
+LOG_SYSLOG_FACILITY=local0  # user (default), daemon, auth, local0 … local7
+```
+
+Levels map to `LOG_DEBUG`, `LOG_INFO`, `LOG_WARNING`, `LOG_ERR` and `LOG_CRIT`; a non-empty context is JSON-encoded onto the message. `syslog` can also be a `stack` or `json` inner driver. Remote syslog (RFC 5424 over UDP) is out of scope — use `ez-php/log-transport` for shipping.
 
 ## JSON structured logging
 
@@ -126,6 +137,7 @@ The middleware wraps the current logger in a `ContextualLogger` and restores the
 | `LogLevel` | Backed enum: `DEBUG\|INFO\|WARNING\|ERROR\|CRITICAL`; `severity()`, `isAtLeast()` |
 | `FileDriver` | Appends to daily-rotated log files; creates directory on demand |
 | `StdoutDriver` | stdout for debug/info/warning, stderr for error/critical |
+| `SyslogDriver` | System logger via stdlib `syslog()`; level → `LOG_*` priority, context JSON-appended |
 | `NullDriver` | No-op — discards all entries |
 | `JsonDriver` | Decorator: serialises entries as JSON, forwards to inner driver |
 | `StackDriver` | Decorator: fans calls out to a list of inner drivers |
