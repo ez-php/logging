@@ -306,8 +306,8 @@ tests/
 ├── LogTest.php                         — covers Log facade: setLogger, resetLogger, all level delegates
 ├── LoggingExceptionHandlerTest.php     — covers decorator: report() logs then delegates, render() does not log, returns inner response
 ├── LogServiceProviderTest.php          — covers provider: binds LoggerInterface, wraps ExceptionHandler
-├── ApplicationTestCase.php             — full-bootstrap test base (requires Docker DB)
-└── DatabaseTestCase.php                — database-aware test base
+├── ApplicationTestCase.php             — full-bootstrap test base over a temp base path with an empty config/ (no database needed)
+└── DatabaseTestCase.php                — shared database-aware test base (an ALLOWED identical copy in `check_test_classes.php`); no logging test extends it
 ```
 
 ---
@@ -485,12 +485,12 @@ After building the driver, if `logging.min_level` is a non-empty valid `LogLevel
 
 ## Testing Approach
 
-- **No infrastructure required** — All tests run in-process. `FileDriver` tests write to a temp directory (created in `setUp`, deleted in `tearDown`). `LogServiceProviderTest` requires Docker DB (extends `DatabaseTestCase`).
+- **No infrastructure required** — All tests run in-process. `FileDriver` tests write to a temp directory (created in `setUp`, deleted in `tearDown`). `LogServiceProviderTest` bootstraps a real `Application` (extends `ApplicationTestCase`) but needs no database.
 - **`ob_start()` / `ob_get_clean()`** — Used in `StdoutDriverTest` and `NullDriverTest` to capture stdout.
 - **Spy helpers** — `SpyLogger` captures all log calls in a public `$logged` array. `OrderedSpyLogger` + `OrderTracker` verify fan-out order in `StackDriverTest`. Public properties are required (vs. reference-backed privates) because PHPStan level 9 flags `property.onlyWritten` on private properties that are only assigned.
 - **`Log::resetLogger()`** — Must be called in both `setUp()` and `tearDown()` in any test that touches the `Log` facade. Omitting it leaks state between tests.
 - **`#[UsesClass]` required** — `beStrictAboutCoverageMetadata=true` is set. Declare all indirectly used classes. Do **not** add `#[UsesClass(LoggerInterface::class)]` — interfaces are not valid coverage targets and trigger a PHPUnit warning.
-- **`LogServiceProviderTest` extends `DatabaseTestCase`** — `Application::bootstrap()` loads `DatabaseServiceProvider`, which requires a real DB. Run inside the monorepo Docker environment.
+- **`LogServiceProviderTest` extends `ApplicationTestCase`** — it bootstraps the kernel over a temporary base path with an empty `config/`; `DatabaseServiceProvider` binds the connection lazily and nothing here resolves it, so no MySQL is needed (standalone CI runs it without one).
 
 ---
 
